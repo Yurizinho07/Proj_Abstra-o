@@ -2,7 +2,6 @@ import math
 from fastapi import HTTPException
 from models.usuarios import Usuario
 
-
 class Restaurante(Usuario):
     def __init__(self, id: int, email: str, password: str, nome_restaurante: str, commission: float):
         super().__init__(id, email, password)

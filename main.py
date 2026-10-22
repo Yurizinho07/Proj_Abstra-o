@@ -9,7 +9,6 @@ app.include_router(login_router)
 app.include_router(restaurantes_router)
 app.include_router(clientes_router)
 
-
 @app.get("/")
 def inicio():
     return {"mensagem": "API funcionando", "documentacao": "/docs", "como_disse_minha_ex": "cabou tudo"}

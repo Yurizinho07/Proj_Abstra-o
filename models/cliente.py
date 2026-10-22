@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from models.usuarios import Usuario
 
-
 class Cliente(Usuario):
     def __init__(self, id: int, email: str, password: str, name: str):
         super().__init__(id, email, password)

@@ -4,7 +4,6 @@ from models.restaurante import Restaurante
 
 router = APIRouter()
 
-
 class RestauranteRequest(BaseModel):
     email: str
     password: str

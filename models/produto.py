@@ -1,7 +1,6 @@
 import math
 from fastapi import HTTPException
 
-
 class Produto:
     def __init__(self, id: int, name: str, price: float):
         self.id = id

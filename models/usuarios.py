@@ -2,7 +2,6 @@ import re
 import secrets
 from fastapi import HTTPException
 
-
 class Usuario:
     def __init__(self, id: int, email: str, password: str):
         self.id = id
