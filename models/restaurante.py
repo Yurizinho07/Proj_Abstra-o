@@ -18,10 +18,10 @@ class Restaurante(Usuario):
             )
     @staticmethod
     def validar_comissao(comissao: float) -> None:
-        if not math.isfinite(comissao) or comissao < 0:
+        if not math.isfinite(comissao) or not 0 <= comissao <= 100:
             raise HTTPException(
                 status_code=400,
-                detail="A comissão não pode ser negativa."
+                detail="A comissão deve estar entre 0 e 100."
             )
 
     @classmethod
@@ -31,15 +31,13 @@ class Restaurante(Usuario):
         cls.validar_comissao(comissao)
     @classmethod
     def criar(cls, email: str, senha: str, nome: str, comissao: float) -> dict:
-        from dados import memoria
-        email = email.strip().lower()
+        from dados import repositorio
+        email = email.lower()
         nome = nome.strip()
         cls.validar_dados(email, senha, nome, comissao)
-        if cls.email_em_uso(email):
+        restaurante = repositorio.cadastrar_restaurante(email, senha, nome, comissao)
+        if restaurante is None:
             raise HTTPException(status_code=400, detail="E-mail já está em uso.")
-        restaurante = cls(memoria.proximo_id_restaurante, email, senha, nome, comissao)
-        memoria.restaurantes.append(restaurante)
-        memoria.proximo_id_restaurante += 1
         return {
             "id": restaurante.id,
             "email": restaurante.email,
@@ -48,52 +46,50 @@ class Restaurante(Usuario):
         }
 
     @classmethod
-    def obter_autenticado(cls, token: str | None):
-        from dados import memoria
-        for item in memoria.tokens:
-            if item["token"] == token and isinstance(item["usuario"], cls):
-                return item["usuario"]
-        raise HTTPException(status_code=401, detail="Token inválido ou usuário não é restaurante.")
+    def obter_autenticado(cls, token: str | None) -> "Restaurante":
+        usuario = Usuario.obter_autenticado(token)
+        if not isinstance(usuario, cls):
+            raise HTTPException(status_code=401, detail="Token inválido ou usuário não é restaurante.")
+        return usuario
 
     @classmethod
     def adicionar_produto(cls, token: str | None, nome: str, preco: float) -> dict:
-        from dados import memoria
+        from dados import repositorio
         from models.produto import Produto
         restaurante = cls.obter_autenticado(token)
         nome = nome.strip()
         Produto.validar_dados(nome, preco)
-        if any(produto.name.lower() == nome.lower() for produto in restaurante.products):
+        produto = repositorio.adicionar_produto(restaurante.id, nome, preco)
+        if produto is None:
             raise HTTPException(status_code=400, detail="Já existe um produto com esse nome neste restaurante.")
-        produto = Produto(memoria.proximo_id_produto, nome, preco)
-        restaurante.products.append(produto)
-        memoria.proximo_id_produto += 1
         return {"id": produto.id, "name": produto.name, "price": produto.price}
 
     @classmethod
     def remover_produto(cls, token: str | None, produto_id: int) -> dict:
+        from dados import repositorio
+
         restaurante = cls.obter_autenticado(token)
-        for produto in restaurante.products:
-            if produto.id == produto_id:
-                restaurante.products.remove(produto)
-                return {"mensagem": "Produto removido.", "id": produto_id}
-        raise HTTPException(status_code=404, detail="Produto não encontrado no menu deste restaurante.")
+        if not repositorio.remover_produto(restaurante.id, produto_id):
+            raise HTTPException(status_code=404, detail="Produto não encontrado no menu deste restaurante.")
+        return {"mensagem": "Produto removido.", "id": produto_id}
 
     @classmethod
     def atualizar_comissao(cls, token: str | None, comissao: float) -> dict:
+        from dados import repositorio
+
         restaurante = cls.obter_autenticado(token)
         cls.validar_comissao(comissao)
-        restaurante.commission = comissao
-        return {"id": restaurante.id, "commission": restaurante.commission}
+        repositorio.atualizar_comissao(restaurante.id, comissao)
+        return {"id": restaurante.id, "commission": comissao}
     @classmethod
     def listar(cls, token: str | None) -> list:
-        from dados import memoria
-        if not any(item["token"] == token for item in memoria.tokens):
-            raise HTTPException(status_code=401, detail="Token inválido.")
-        ordenados = sorted(memoria.restaurantes, key=lambda restaurante: (-restaurante.commission, restaurante.nome_restaurante.lower()))
+        from dados import repositorio
+
+        Usuario.obter_autenticado(token)
+        ordenados = sorted(repositorio.listar_restaurantes(), key=lambda restaurante: (-restaurante.commission, restaurante.nome_restaurante.lower()))
         return [
             {
                 "id": restaurante.id,
-                "email": restaurante.email,
                 "restaurant_name": restaurante.nome_restaurante,
                 "commission": restaurante.commission,
                 "products": [

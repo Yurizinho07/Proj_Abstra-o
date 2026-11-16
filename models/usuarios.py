@@ -1,13 +1,16 @@
 import re
 import secrets
+from abc import ABC, abstractmethod
+
 from fastapi import HTTPException
 
-class Usuario:
-    def __init__(self, id: int, email: str, password: str):
+class Usuario(ABC):
+    @abstractmethod
+    def __init__(self, id: int, email: str, password: str) -> None:
         self.id = id
         self.email = email
         self.password = password
-
+    
     @staticmethod
     def validar_email(email: str) -> None:
         padrao_email = r"^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$"
@@ -30,22 +33,23 @@ class Usuario:
         cls.validar_email(email)
         cls.validar_senha(senha)
     @staticmethod
-    def email_em_uso(email: str) -> bool:
-        from dados import memoria
-        usuarios = memoria.restaurantes + memoria.clientes
-        return any(usuario.email == email for usuario in usuarios)
+    def autenticar(email: str, senha: str) -> dict:
+        from dados import repositorio
+
+        usuario = repositorio.buscar_usuario(email.lower(), senha)
+        if usuario is None:
+            raise HTTPException(status_code=401, detail="Credenciais inválidas.")
+        token = secrets.token_hex(24)
+        repositorio.substituir_token(usuario.id, token)
+        return {"token": token}
 
     @staticmethod
-    def autenticar(email: str, senha: str) -> dict:
-        from dados import memoria
-        email = email.strip().lower()
-        usuarios = memoria.restaurantes + memoria.clientes
-        for usuario in usuarios:
-            if usuario.email == email and usuario.password == senha:
-                valor_token = secrets.token_hex(24)
-                memoria.tokens.append({"id": memoria.proximo_id_token, "token": valor_token, "usuario": usuario})
-                memoria.proximo_id_token += 1
-                return {"token": valor_token}
-        raise HTTPException(status_code=401, detail="Credenciais inválidas.")
+    def obter_autenticado(token: str | None) -> "Usuario":
+        from dados import repositorio
+
+        usuario = repositorio.buscar_usuario_por_token(token) if token else None
+        if usuario is None:
+            raise HTTPException(status_code=401, detail="Token inválido.")
+        return usuario
 
 Usuarios = Usuario

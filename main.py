@@ -2,12 +2,14 @@ from fastapi import FastAPI
 from routes.login import router as login_router
 from routes.restaurantes import router as restaurantes_router
 from routes.clientes import router as clientes_router
+from routes.pedidos import router as pedidos_router
 
 app = FastAPI(title="Catálogo de Restaurantes")
 
 app.include_router(login_router)
 app.include_router(restaurantes_router)
 app.include_router(clientes_router)
+app.include_router(pedidos_router)
 
 @app.get("/")
 def inicio():

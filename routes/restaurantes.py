@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictFloat
 from models.restaurante import Restaurante
 
 router = APIRouter()
@@ -8,12 +8,12 @@ class RestauranteRequest(BaseModel):
     email: str
     password: str
     restaurant_name: str
-    commission: float
+    commission: StrictFloat
 class ProdutoRequest(BaseModel):
     name: str
-    price: float
+    price: StrictFloat
 class ComissaoRequest(BaseModel):
-    commission: float
+    commission: StrictFloat
 
 
 @router.post("/restaurants")

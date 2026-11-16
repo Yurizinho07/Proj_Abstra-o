@@ -1,8 +1,10 @@
+from threading import Lock
+
 restaurantes = []
 clientes = []
 tokens = []
 
-proximo_id_restaurante = 1
+lock_usuarios = Lock()
+proximo_id_usuario = 1
 proximo_id_produto = 1
-proximo_id_cliente = 1
 proximo_id_token = 1

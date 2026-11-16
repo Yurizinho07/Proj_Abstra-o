@@ -2,11 +2,18 @@ Executar
 
 Requer Python 3.12 ou superior.
 
-powershell
-uv sync
-uv run uvicorn main:app --reload
+Abre o PowerShell na pasta do projeto e roda os dois comandos abaixo.
 
-A API fica em http://127.0.0.1:8000 A documentação interativa fica em http://127.0.0.1:8000/docs
+```powershell
+uv sync
+.\.venv\Scripts\python.exe -m uvicorn main:app --reload
+```
+
+A API roda em http://127.0.0.1:8000. Pra testar pelo navegador, abre o Swagger em http://127.0.0.1:8000/docs.
+
+Se o ambiente `.venv` já estiver preparado, pode rodar só o segundo comando. Ele usa o Python do ambiente para abrir o Uvicorn e evita o erro `uv trampoline failed to canonicalize script path` do atalho `uvicorn.exe` no Windows.
+
+O SQLite já vem com o Python. Quando alguma rota usar o banco pela primeira vez, o projeto cria o arquivo `dados/catalogo.db` e as tabelas. Os dados ficam salvos mesmo se fechar e abrir o servidor de novo. Na hora de montar o ZIP da entrega, deixa de fora o arquivo `.db` e as pastas `.env` e `.venv`.
 
 Rotas
 
@@ -19,13 +26,22 @@ Rotas
 | DELETE | `/restaurants/products/{id}` | Remove produto do restaurante autenticado |
 | PATCH | `/restaurants/` | Atualiza comissão do restaurante autenticado |
 | GET | `/restaurants` | Lista restaurantes e produtos |
+| GET | `/docs` | Abre o Swagger |
+| POST | `/restaurants/{ID_RES}/{ID_PROD}/` | Registra uma compra para o cliente autenticado |
+| GET | `/orders/` | Lista compras do cliente ou vendas do restaurante, mais recentes primeiro |
 
-Nas rotas protegidas, envie o token no header auth_token. O login retorna o token no corpo da resposta. Para testar, cadastre um restaurante, faça login com o e-mail e senha e use o token nas rotas protegidas.
-Os e-mails são armazenados em letras minúsculas e não podem se repetir entre clientes e restaurantes. Senhas precisam ter no mínimo cinco caracteres, uma letra minúscula, uma maiúscula e um número. Nomes de restaurante precisam ter mais de cinco caracteres/ nomes de produto, mais de quatro/ nomes de cliente, mais de cinco. A comissão pode ser zero ou maior. O produto precisa ter preço maior que zero. Na listagem, comissões maiores aparecem primeiro e os nomes desempatarão em ordem alfabética.
-Usuario guarda os dados e as validações compartilhadas de ID, e-mail e senha, além da autenticação. Restaurante e Cliente herdam de Usuario e adicionam seus próprios dados, validações e operações. Produto guarda as validações de produto. As rotas só recebem os dados e chamam os métodos das classes; a lógica de cadastro e das operações fica nos modelos.
+Como testar uma compra
 
+1. Cadastra um restaurante e faz login com o e-mail e a senha dele. O token aparece no JSON e no header `X-Auth-Token` da resposta. Se fizer login de novo, pega o token novo, porque o anterior para de funcionar.
+2. Adiciona um produto em `POST /restaurants/products` com um JSON tipo `{"name": "X-Bacon", "price": 25}`. No header `auth_token`, coloca o token do restaurante. Guarda os IDs que a API devolveu no cadastro do restaurante e do produto.
+3. Cadastra um cliente com outro e-mail e faz login com essa conta. Se o ID do restaurante for `1` e o do produto for `3`, chama `POST /restaurants/1/3/` com `{"quantity": 2}` e o token do cliente no header `auth_token`. Troca esses IDs pelos teus. A grafia `restaurants` é a mesma do enunciado.
+4. A resposta mostra o ID do pedido, os IDs do cliente, do restaurante e do produto, a quantidade e a data e hora em UTC. Em `GET /orders/`, o token do cliente mostra as compras dele e o token do restaurante mostra as vendas dele. Os pedidos mais recentes aparecem primeiro.
 
+Regras do cadastro e do cardápio
 
-Modelo logico: Print na pasta
+O e-mail fica em minúsculas e só pode ser usado em uma conta. A senha precisa ter pelo menos cinco caracteres, com uma minúscula, uma maiúscula e um número. Nomes de cliente e restaurante precisam ter mais de cinco caracteres. Nome de produto precisa ter mais de quatro.Na lista, quem tem a maior comissão aparece primeiro. Se empatar, vai por ordem alfabética.
 
-Modelo ER: Print na pasta
+Como o código tá separado
+
+`routes` recebe os dados da requisição. `models` tem as classes e as regras de cadastro, login, cardápio e pedido. `dados/sqlite.py` é onde ficam as consultas e as gravações no banco. Quando um produto sai do cardápio, as compras antigas dele continuam aparecendo no histórico.
+

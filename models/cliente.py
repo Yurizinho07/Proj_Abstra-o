@@ -18,13 +18,13 @@ class Cliente(Usuario):
 
     @classmethod
     def criar(cls, email: str, senha: str, nome: str) -> dict:
-        from dados import memoria
-        email = email.strip().lower()
+        from dados import repositorio
+        email = email.lower()
         nome = nome.strip()
         cls.validar_dados(email, senha, nome)
-        if cls.email_em_uso(email):
+        cliente = repositorio.cadastrar_cliente(email, senha, nome)
+        if cliente is None:
             raise HTTPException(status_code=400, detail="E-mail já está em uso.")
-        cliente = cls(memoria.proximo_id_cliente, email, senha, nome)
-        memoria.clientes.append(cliente)
-        memoria.proximo_id_cliente += 1
         return {"id": cliente.id, "email": cliente.email, "name": cliente.name}
+
+#  Padrão de ciração de fabricação de todos os usuarios, um unico objeto que cria ferramentas para todos os tipos de usuario. 

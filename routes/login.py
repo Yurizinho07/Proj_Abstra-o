@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from pydantic import BaseModel
 from models.usuarios import Usuario
 
@@ -9,5 +9,7 @@ class LoginRequest(BaseModel):
     password: str
 
 @router.post("/login")
-def login(dados: LoginRequest) -> dict:
-    return Usuario.autenticar(dados.email, dados.password)
+def login(dados: LoginRequest, response: Response) -> dict:
+    resultado = Usuario.autenticar(dados.email, dados.password)
+    response.headers["X-Auth-Token"] = resultado["token"]
+    return resultado
