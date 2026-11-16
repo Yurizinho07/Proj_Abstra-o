@@ -9,7 +9,7 @@ class LoginRequest(BaseModel):
     password: str
 
 @router.post("/login")
-def login(dados: LoginRequest, response: Response) -> dict:
+def login(dados: LoginRequest, response: Response) -> dict[str, str]:
     resultado = Usuario.autenticar(dados.email, dados.password)
     response.headers["X-Auth-Token"] = resultado["token"]
     return resultado

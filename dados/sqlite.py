@@ -55,6 +55,7 @@ def inicializar_banco(arquivo: Path) -> None:
         """)
 
 
+
 @contextmanager
 def conectar(escrita: bool = False) -> Iterator[sqlite3.Connection]:
     inicializar_banco(ARQUIVO_BANCO)

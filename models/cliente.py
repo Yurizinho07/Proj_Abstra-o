@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from models.usuarios import Usuario
 
 class Cliente(Usuario):
-    def __init__(self, id: int, email: str, password: str, name: str):
+    def __init__(self, id: int, email: str, password: str, name: str) -> None:
         super().__init__(id, email, password)
         self.name = name
 
@@ -17,7 +17,7 @@ class Cliente(Usuario):
         cls.validar_nome(name)
 
     @classmethod
-    def criar(cls, email: str, senha: str, nome: str) -> dict:
+    def criar(cls, email: str, senha: str, nome: str) -> dict[str, int | str]:
         from dados import repositorio
         email = email.lower()
         nome = nome.strip()

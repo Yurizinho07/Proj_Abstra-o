@@ -33,7 +33,7 @@ class Usuario(ABC):
         cls.validar_email(email)
         cls.validar_senha(senha)
     @staticmethod
-    def autenticar(email: str, senha: str) -> dict:
+    def autenticar(email: str, senha: str) -> dict[str, str]:
         from dados import repositorio
 
         usuario = repositorio.buscar_usuario(email.lower(), senha)

@@ -1,13 +1,14 @@
 import math
 from fastapi import HTTPException
 from models.usuarios import Usuario
+from models.produto import Produto
 
 class Restaurante(Usuario):
-    def __init__(self, id: int, email: str, password: str, nome_restaurante: str, commission: float):
+    def __init__(self, id: int, email: str, password: str, nome_restaurante: str, commission: float) -> None:
         super().__init__(id, email, password)
         self.nome_restaurante = nome_restaurante
         self.commission = commission
-        self.products = []
+        self.products: list[Produto] = []
 
     @staticmethod
     def validar_nome(nome_restaurante: str) -> None:
@@ -18,10 +19,10 @@ class Restaurante(Usuario):
             )
     @staticmethod
     def validar_comissao(comissao: float) -> None:
-        if not math.isfinite(comissao) or not 0 <= comissao <= 100:
+        if not math.isfinite(comissao) or comissao < 0:
             raise HTTPException(
                 status_code=400,
-                detail="A comissão deve estar entre 0 e 100."
+                detail="A comissão deve ser maior ou igual a zero."
             )
 
     @classmethod
@@ -30,7 +31,7 @@ class Restaurante(Usuario):
         cls.validar_nome(nome_restaurante)
         cls.validar_comissao(comissao)
     @classmethod
-    def criar(cls, email: str, senha: str, nome: str, comissao: float) -> dict:
+    def criar(cls, email: str, senha: str, nome: str, comissao: float) -> dict[str, int | str | float]:
         from dados import repositorio
         email = email.lower()
         nome = nome.strip()
@@ -53,9 +54,8 @@ class Restaurante(Usuario):
         return usuario
 
     @classmethod
-    def adicionar_produto(cls, token: str | None, nome: str, preco: float) -> dict:
+    def adicionar_produto(cls, token: str | None, nome: str, preco: float) -> dict[str, int | str | float]:
         from dados import repositorio
-        from models.produto import Produto
         restaurante = cls.obter_autenticado(token)
         nome = nome.strip()
         Produto.validar_dados(nome, preco)
@@ -65,7 +65,7 @@ class Restaurante(Usuario):
         return {"id": produto.id, "name": produto.name, "price": produto.price}
 
     @classmethod
-    def remover_produto(cls, token: str | None, produto_id: int) -> dict:
+    def remover_produto(cls, token: str | None, produto_id: int) -> dict[str, int | str]:
         from dados import repositorio
 
         restaurante = cls.obter_autenticado(token)
@@ -74,7 +74,7 @@ class Restaurante(Usuario):
         return {"mensagem": "Produto removido.", "id": produto_id}
 
     @classmethod
-    def atualizar_comissao(cls, token: str | None, comissao: float) -> dict:
+    def atualizar_comissao(cls, token: str | None, comissao: float) -> dict[str, int | float]:
         from dados import repositorio
 
         restaurante = cls.obter_autenticado(token)
@@ -82,7 +82,7 @@ class Restaurante(Usuario):
         repositorio.atualizar_comissao(restaurante.id, comissao)
         return {"id": restaurante.id, "commission": comissao}
     @classmethod
-    def listar(cls, token: str | None) -> list:
+    def listar(cls, token: str | None) -> list[dict[str, object]]:
         from dados import repositorio
 
         Usuario.obter_autenticado(token)

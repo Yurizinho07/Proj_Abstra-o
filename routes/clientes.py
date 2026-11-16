@@ -10,5 +10,5 @@ class ClienteRequest(BaseModel):
     name: str
 
 @router.post("/clients")
-def criar_cliente(dados: ClienteRequest) -> dict:
+def criar_cliente(dados: ClienteRequest) -> dict[str, int | str]:
     return Cliente.criar(dados.email, dados.password, dados.name)

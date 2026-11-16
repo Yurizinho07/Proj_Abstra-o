@@ -6,12 +6,12 @@ Abre o PowerShell na pasta do projeto e roda os dois comandos abaixo.
 
 ```powershell
 uv sync
-.\.venv\Scripts\python.exe -m uvicorn main:app --reload
+uv run python -m uvicorn main:app --reload
 ```
 
 A API roda em http://127.0.0.1:8000. Pra testar pelo navegador, abre o Swagger em http://127.0.0.1:8000/docs.
 
-Se o ambiente `.venv` já estiver preparado, pode rodar só o segundo comando. Ele usa o Python do ambiente para abrir o Uvicorn e evita o erro `uv trampoline failed to canonicalize script path` do atalho `uvicorn.exe` no Windows.
+O uv gerencia o ambiente e as dependências definidos no `pyproject.toml` e no `uv.lock`. Para iniciar novamente, use o segundo comando. O Uvicorn executa o servidor FastAPI.
 
 O SQLite já vem com o Python. Quando alguma rota usar o banco pela primeira vez, o projeto cria o arquivo `dados/catalogo.db` e as tabelas. Os dados ficam salvos mesmo se fechar e abrir o servidor de novo. Na hora de montar o ZIP da entrega, deixa de fora o arquivo `.db` e as pastas `.env` e `.venv`.
 

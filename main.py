@@ -12,5 +12,5 @@ app.include_router(clientes_router)
 app.include_router(pedidos_router)
 
 @app.get("/")
-def inicio():
+def inicio() -> dict[str, str]:
     return {"mensagem": "API funcionando", "documentacao": "/docs", "como_disse_minha_ex": "cabou tudo"}

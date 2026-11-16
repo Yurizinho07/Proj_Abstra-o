@@ -17,21 +17,21 @@ class ComissaoRequest(BaseModel):
 
 
 @router.post("/restaurants")
-def criar_restaurante(dados: RestauranteRequest) -> dict:
+def criar_restaurante(dados: RestauranteRequest) -> dict[str, int | str | float]:
     return Restaurante.criar(dados.email, dados.password, dados.restaurant_name, dados.commission)
 
 @router.post("/restaurants/products")
-def criar_produto(dados: ProdutoRequest, auth_token: str | None = Header(default=None, convert_underscores=False)) -> dict:
+def criar_produto(dados: ProdutoRequest, auth_token: str | None = Header(default=None, convert_underscores=False)) -> dict[str, int | str | float]:
     return Restaurante.adicionar_produto(auth_token, dados.name, dados.price)
 
 @router.delete("/restaurants/products/{id}")
-def remover_produto(id: int, auth_token: str | None = Header(default=None, convert_underscores=False)) -> dict:
+def remover_produto(id: int, auth_token: str | None = Header(default=None, convert_underscores=False)) -> dict[str, int | str | float]:
     return Restaurante.remover_produto(auth_token, id)
 
 @router.patch("/restaurants/")
-def atualizar_comissao(dados: ComissaoRequest, auth_token: str | None = Header(default=None, convert_underscores=False)) -> dict:
+def atualizar_comissao(dados: ComissaoRequest, auth_token: str | None = Header(default=None, convert_underscores=False)) -> dict[str, int | str | float]:
     return Restaurante.atualizar_comissao(auth_token, dados.commission)
 
 @router.get("/restaurants")
-def listar_restaurantes(auth_token: str | None = Header(default=None, convert_underscores=False)) -> list:
+def listar_restaurantes(auth_token: str | None = Header(default=None, convert_underscores=False)) -> list[dict[str, object]]:
     return Restaurante.listar(auth_token)
