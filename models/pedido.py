@@ -1,8 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from fastapi import HTTPException
-from models.cliente import Cliente
-from models.usuarios import Usuario
 
 @dataclass(frozen=True)
 class Pedido:
@@ -15,27 +12,12 @@ class Pedido:
 
     @staticmethod
     def criar(token: str | None, restaurante_id: int, produto_id: int, quantidade: int) -> "Pedido":
-        from dados import repositorio
+        from facades.pedido_facade import PedidoFacade
 
-        cliente = Usuario.obter_autenticado(token)
-        if not isinstance(cliente, Cliente):
-            raise HTTPException(status_code=403, detail="Apenas clientes podem realizar compras.")
-        if quantidade <= 0:
-            raise HTTPException(status_code=400, detail="A quantidade deve ser maior que zero.")
-        if quantidade > 2**63 - 1:
-            raise HTTPException(status_code=400, detail="A quantidade excede o limite suportado.")
-        pedido = repositorio.registrar_pedido(cliente.id, restaurante_id, produto_id, quantidade)
-        if pedido is None:
-            raise HTTPException(status_code=404, detail="Produto não encontrado no menu deste restaurante.")
-        return pedido
+        return PedidoFacade.realizar_compra(token, restaurante_id, produto_id, quantidade)
 
     @staticmethod
     def listar(token: str | None) -> list["Pedido"]:
-        from dados import repositorio
+        from facades.pedido_facade import PedidoFacade
 
-        usuario = Usuario.obter_autenticado(token)
-        return sorted(
-            repositorio.listar_pedidos(usuario),
-            key=lambda pedido: (pedido.created_at, pedido.id),
-            reverse=True,
-        )
+        return PedidoFacade.listar_pedidos(token)

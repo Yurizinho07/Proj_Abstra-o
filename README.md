@@ -45,3 +45,16 @@ Como o código tá separado
 
 `routes` recebe os dados da requisição. `models` tem as classes e as regras de cadastro, login, cardápio e pedido. `dados/sqlite.py` é onde ficam as consultas e as gravações no banco. Quando um produto sai do cardápio, as compras antigas dele continuam aparecendo no histórico.
 
+Padrão Factory
+
+`models/usuario_factory.py` implementa uma Simple Factory: a classe `UsuarioFactory` centraliza a construção de `Cliente` e `Restaurante`. O método `criar` escolhe a classe pelo tipo de usuário; `criar_cliente` e `criar_restaurante` atendem aos casos em que o tipo já é conhecido.
+
+Os repositórios SQLite e em memória usam a fábrica no cadastro e na reconstrução dos usuários. As validações continuam nos modelos, e o banco continua responsável por IDs e persistência. A fábrica não modifica rotas, respostas, autenticação ou regras de negócio.
+
+Padrão Facade
+
+`facades/pedido_facade.py` implementa a classe `PedidoFacade`. As rotas de compra e histórico chamam essa fachada, que coordena autenticação, autorização, validação da quantidade e acesso ao repositório. O histórico continua em ordem do mais recente para o mais antigo.
+
+Fluxo da compra: rota → `PedidoFacade.realizar_compra` → autenticação e validações → repositório → `Pedido`.
+
+`Pedido` representa os dados da compra. Seus métodos `criar` e `listar` foram mantidos como delegações para a fachada, preservando chamadas existentes. As rotas, os headers, os campos das respostas e os códigos de erro permanecem os mesmos.

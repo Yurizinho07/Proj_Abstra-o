@@ -26,5 +26,3 @@ class Cliente(Usuario):
         if cliente is None:
             raise HTTPException(status_code=400, detail="E-mail já está em uso.")
         return {"id": cliente.id, "email": cliente.email, "name": cliente.name}
-
-#  Padrão de ciração de fabricação de todos os usuarios, um unico objeto que cria ferramentas para todos os tipos de usuario. 

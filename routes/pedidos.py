@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel, StrictInt
 from models.pedido import Pedido
+from facades.pedido_facade import PedidoFacade
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ def criar_pedido(
     auth_token: str | None = Header(default=None, alias="auth_token"),
 ) -> Pedido:
     quantidade = dados.quantity
-    pedido = Pedido.criar(
+    pedido = PedidoFacade.realizar_compra(
         token=auth_token,
         restaurante_id=ID_RES,
         produto_id=ID_PROD,
@@ -28,4 +29,4 @@ def criar_pedido(
 def listar_pedidos(
     auth_token: str | None = Header(default=None, convert_underscores=False),
 ) -> list[Pedido]:
-    return Pedido.listar(auth_token)
+    return PedidoFacade.listar_pedidos(auth_token)

@@ -6,6 +6,7 @@ from models.pedido import Pedido
 from models.produto import Produto
 from models.restaurante import Restaurante
 from models.usuarios import Usuario
+from models.usuario_factory import UsuarioFactory
 
 _pedidos: list[Pedido] = []
 _ids_pedidos = count(1)
@@ -14,7 +15,7 @@ def cadastrar_cliente(email: str, senha: str, nome: str) -> Cliente | None:
     with memoria.lock_usuarios:
         if any(usuario.email == email for usuario in memoria.clientes + memoria.restaurantes):
             return None
-        cliente = Cliente(memoria.proximo_id_usuario, email, senha, nome)
+        cliente = UsuarioFactory.criar_cliente(memoria.proximo_id_usuario, email, senha, nome)
         memoria.clientes.append(cliente)
         memoria.proximo_id_usuario += 1
         return cliente
@@ -23,7 +24,7 @@ def cadastrar_restaurante(email: str, senha: str, nome: str, comissao: float) ->
     with memoria.lock_usuarios:
         if any(usuario.email == email for usuario in memoria.clientes + memoria.restaurantes):
             return None
-        restaurante = Restaurante(memoria.proximo_id_usuario, email, senha, nome, comissao)
+        restaurante = UsuarioFactory.criar_restaurante(memoria.proximo_id_usuario, email, senha, nome, comissao)
         memoria.restaurantes.append(restaurante)
         memoria.proximo_id_usuario += 1
         return restaurante
@@ -78,7 +79,7 @@ def listar_restaurantes() -> list[Restaurante]:
     with memoria.lock_usuarios:
         restaurantes = []
         for registro in memoria.restaurantes:
-            restaurante = Restaurante(
+            restaurante = UsuarioFactory.criar_restaurante(
                 registro.id, registro.email, registro.password,
                 registro.nome_restaurante, registro.commission,
             )

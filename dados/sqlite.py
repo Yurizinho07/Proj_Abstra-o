@@ -11,6 +11,7 @@ from models.pedido import Pedido
 from models.produto import Produto
 from models.restaurante import Restaurante
 from models.usuarios import Usuario
+from models.usuario_factory import UsuarioFactory
 
 ARQUIVO_BANCO = Path(__file__).resolve().parent / "catalogo.db"
 
@@ -75,10 +76,8 @@ def hash_senha(senha: str, sal: bytes) -> str:
 
 
 def montar_usuario(registro: sqlite3.Row) -> Cliente | Restaurante:
-    if registro["tipo"] == "cliente":
-        return Cliente(registro["id"], registro["email"], registro["senha"], registro["nome"])
-    return Restaurante(
-        registro["id"], registro["email"], registro["senha"],
+    return UsuarioFactory.criar(
+        registro["tipo"], registro["id"], registro["email"], registro["senha"],
         registro["nome"], registro["comissao"],
     )
 
@@ -101,13 +100,13 @@ def cadastrar_cliente(email: str, senha: str, nome: str) -> Cliente | None:
     registro = cadastrar_usuario(email, senha, nome, "cliente")
     if registro is None:
         return None
-    return Cliente(registro["id"], email, registro["senha"], nome)
+    return UsuarioFactory.criar_cliente(registro["id"], email, registro["senha"], nome)
 
 def cadastrar_restaurante(email: str, senha: str, nome: str, comissao: float) -> Restaurante | None:
     registro = cadastrar_usuario(email, senha, nome, "restaurante", comissao)
     if registro is None:
         return None
-    return Restaurante(registro["id"], email, registro["senha"], nome, comissao)
+    return UsuarioFactory.criar_restaurante(registro["id"], email, registro["senha"], nome, comissao)
 
 def buscar_usuario(email: str, senha: str) -> Usuario | None:
     with conectar() as banco:
@@ -168,7 +167,7 @@ def listar_restaurantes() -> list[Restaurante]:
     with conectar() as banco:
         restaurantes = {}
         for registro in banco.execute("SELECT * FROM usuarios WHERE tipo = 'restaurante'"):
-            restaurante = Restaurante(
+            restaurante = UsuarioFactory.criar_restaurante(
                 registro["id"], registro["email"], registro["senha"],
                 registro["nome"], registro["comissao"],
             )
